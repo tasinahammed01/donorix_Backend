@@ -51,6 +51,27 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// UPDATE USER BY ID
+router.patch("/update/:id", async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+  const db = req.db;
+
+  try {
+    const result = await db
+      .collection("users")
+      .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "User updated successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // DELETE USER BY ID
 router.delete("/:id", async (req, res) => {
   const db = req.db;
