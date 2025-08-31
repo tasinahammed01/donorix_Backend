@@ -19,31 +19,37 @@ router.post("/register", async (req, res) => {
       email,
       phone: "",
       location: "",
-      profileImage : "",
+      profileImage: "",
       password: hashedPassword,
       role: role || "donor",
       totalDonated: 0,
       createdAt: new Date(),
       isSuspended: false,
       isActive: true,
-      donations: [],
+      donations: {
+        bloodGroup: "",
+        lastDonationDate: null,
+        weight: null,
+        height: null,
+        bmi: null,
+        isEligible: null,
+        nextDonationDate: null,
+      },
       achievements: [],
       level: {
         current: 1,
         xp: 0,
-        nextLevelXp: 5, // first level target
+        nextLevelXp: 5,
         levelBadge: "bronze",
       },
     };
 
     const result = await db.collection("users").insertOne(newUser);
 
-    res
-      .status(201)
-      .json({
-        message: "User registered successfully",
-        userId: result.insertedId,
-      });
+    res.status(201).json({
+      message: "User registered successfully",
+      userId: result.insertedId,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
