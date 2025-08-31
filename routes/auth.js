@@ -17,6 +17,9 @@ router.post("/register", async (req, res) => {
     const newUser = {
       name,
       email,
+      phone: "",
+      location: "",
+      profileImage : "",
       password: hashedPassword,
       role: role || "donor",
       totalDonated: 0,
