@@ -34,6 +34,7 @@ router.post("/register", async (req, res) => {
         bmi: null,
         isEligible: null,
         nextDonationDate: null,
+        age: null,
       },
       achievements: [],
       level: {
