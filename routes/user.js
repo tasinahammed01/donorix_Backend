@@ -76,20 +76,30 @@ router.delete("/:userId/profile-image", async (req, res) => {
   }
 });
 
-/* ------------------------- GET SINGLE USER ------------------------- */
-router.get("/:id", async (req, res) => {
+/* ------------------------- UPDATE SINGLE USER ------------------------- */
+router.put("/:id", async (req, res) => {
   const db = req.db;
   const { id } = req.params;
+  const updatedData = req.body; // Data sent from frontend
 
   try {
-    const user = await db
+    const result = await db
+      .collection("users")
+      .updateOne({ _id: new ObjectId(id) }, { $set: updatedData });
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const updatedUser = await db
       .collection("users")
       .findOne({ _id: new ObjectId(id) });
-    if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.status(200).json(user);
+    res
+      .status(200)
+      .json({ message: "User updated successfully", user: updatedUser });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch user", error });
+    res.status(500).json({ message: "Failed to update user", error });
   }
 });
 
