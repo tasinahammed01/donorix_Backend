@@ -76,6 +76,24 @@ router.delete("/:userId/profile-image", async (req, res) => {
   }
 });
 
+
+// get single user
+router.get("/:id", async (req, res) => {
+  const db = req.db;
+  const { id } = req.params;
+  try {
+    const user = await db
+      .collection("users")
+      .findOne({ _id: new ObjectId(id) });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch user", error });
+  }
+});
+
 /* ------------------------- UPDATE SINGLE USER ------------------------- */
 router.put("/:id", async (req, res) => {
   const db = req.db;
@@ -159,6 +177,64 @@ router.delete("/:id", async (req, res) => {
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete user", error });
+  }
+});
+
+/* ------------------------- SUSPEND / UNSUSPEND USER ------------------------- */
+router.patch("/:id", async (req, res) => {
+  const db = req.db;
+  const { id } = req.params;
+  const { action } = req.body; // action = "suspend" | "unsuspend"
+
+  if (!["suspend", "unsuspend"].includes(action)) {
+    return res.status(400).json({ message: "Invalid action" });
+  }
+
+  try {
+    const status = action === "suspend" ? "suspended" : "active";
+    const result = await db
+      .collection("users")
+      .updateOne({ _id: new ObjectId(id) }, { $set: { status } });
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: `User has been ${
+        action === "suspend" ? "suspended" : "unsuspended"
+      }.`,
+      status,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to update user status", error });
+  }
+});
+
+/* ------------------------- CHANGE USER ROLE ------------------------- */
+router.patch("/:id", async (req, res) => {
+  const db = req.db;
+  const { id } = req.params;
+  const { role } = req.body; // role = "admin" | "donor" | "recipient"
+
+  if (!["admin", "donor", "recipient"].includes(role)) {
+    return res.status(400).json({ message: "Invalid role" });
+  }
+
+  try {
+    const result = await db
+      .collection("users")
+      .updateOne({ _id: new ObjectId(id) }, { $set: { role } });
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: `User role updated to ${role}`, role });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to update user role", error });
   }
 });
 
